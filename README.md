@@ -1,4 +1,4 @@
-# breihzicoop
+# breizhicoop
 
 POC with multiple docker containers in one server
 
