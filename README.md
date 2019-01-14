@@ -1,10 +1,8 @@
-# breizhicoop
+## breizhicoop
 
-POC with multiple docker containers in one server
+POC with multiple apps in different docker containers in one server
 
-see http://breizhicoop.gurvanhenry.com/
-
-apps :
-- mattermost : http://breizhicoop-mattermost.gurvanhenry.com 
-- nextcloud : http://breizhicoop-nextcloud.gurvanhenry.com
-- website : http://breizhicoop.gurvanhenry.com
+### apps
+- mattermost: http://breizhicoop-mattermost.gurvanhenry.com 
+- nextcloud: http://breizhicoop-nextcloud.gurvanhenry.com
+- static website: http://breizhicoop.gurvanhenry.com
