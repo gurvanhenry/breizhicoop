@@ -43,7 +43,7 @@ parameters:
         - '%emails.admin%'
         - '%emails.noreply%'
     secret: ThisTokenIsNotSoSecretChangeIt
-    router.request_context.host: membres.localcoop.local
+    router.request_context.host: breizhicoop-membres.gurvanhenry.com
     router.request_context.scheme: http
     router.request_context.base_url: null
     site_name: 'Espace membre @ MyLocalCoop'
