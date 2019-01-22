@@ -5,6 +5,7 @@ POC with multiple apps in different docker containers in one server
 ### apps
 - mattermost: http://breizhicoop-mattermost.gurvanhenry.com 
 - nextcloud: http://breizhicoop-nextcloud.gurvanhenry.com
+- espace membres: http://breizhicoop-membres.gurvanhenry.com
 - static website: http://breizhicoop.gurvanhenry.com
 
 ### commands
@@ -24,7 +25,7 @@ POC with multiple apps in different docker containers in one server
 - `docker-compose exec gestion-compte php bin/console doctrine:schema:create`
 - add "127.0.0.1 breizhicoop-membres.gurvanhenry.com" to your /etc/hosts
 - visit "http://breizhicoop-membres.gurvanhenry.com/user/install_admin" to create the super admin user
-- login on "http://breizhicoop-membres.gurvanhenry.com" with (admin:password)
+- login with admin:password
 - if needed: `docker-compose exec gestion-compte bash`
 
 ## remarks
