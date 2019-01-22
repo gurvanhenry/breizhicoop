@@ -15,7 +15,15 @@ POC with multiple apps in different docker containers in one server
 - nginx applied conf `docker exec website nginx -T`
 - error log `docker logs website`
 
-#### mattermost / nextcloud
+#### mattermost 
+- create data folder: 
+  - `mkdir -p ./volumes/app/mattermost/{data,logs,config,plugins}`
+  - `chown -R 2000:2000 ./volumes/app/mattermost/`
+  - `sudo chown -R 2000:2000 ./volumes/app/mattermost/`
+- start container `docker-compose start`
+- delete settings and data : `sudo rm -rf volumes`
+
+#### nextcloud
 - `docker-compose up -d`
 
 #### elefan
