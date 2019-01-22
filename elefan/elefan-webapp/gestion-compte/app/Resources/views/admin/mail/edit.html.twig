@@ -1,0 +1,71 @@
+{% extends 'layout.html.twig' %}
+
+{% block content %}
+{{ form_start(form) }}
+
+    <div class="row">
+        <div class="input-field col s12">
+            {{ form_widget(form.from) }}
+            {{ form_label(form.from) }}
+        </div>
+        <div class="col s12">
+            <div class="chips ">
+            </div>
+        </div>
+        <div class="input-field col s12">
+            {{ form_widget(form.subject) }}
+            {{ form_label(form.subject) }}
+        </div>
+        <div class="input-field col s12">
+            {{ form_widget(form.message) }}
+            {{ form_label(form.message) }}
+        </div>
+        <div class="tips right small">
+            prénom : <input value="{{ '{{' }} beneficiary.firstname {{ '}}' }}"/>
+        </div>
+    </div>
+
+    <button class="btn waves-effect waves-light" type="submit"><i class="material-icons left">send</i>Envoyer</button>
+    {{ form_widget(form) }}
+{{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        jQuery(function() {
+            $.ajax({
+                type: 'GET',
+                url: '{{ path('mail_get_beneficiaries') }}',
+                success: function(response) {
+                    var userArray = response;
+                    var dataUsers = {};
+                    for (var i = 0; i < userArray.length; i++) {
+                        dataUsers[userArray[i]] = null;
+                    }
+                    $('.chips').material_chip({
+                        placeholder: 'Destinataires',
+                        data: [
+                            {% for user in to %}
+                                {% for beneficiary in user.beneficiaries %}
+                            {
+                            tag: "{{ beneficiary.autocompleteLabel }}",
+                        },{% endfor %}{% endfor %} ],
+                        autocompleteOptions: {
+                            data: dataUsers,
+                            limit: Infinity,
+                            minLength: 1
+                        }
+                    });
+                    $("input[name='form[to]']").val(JSON.stringify($('.chips').material_chip('data')));
+                }
+            });
+            $('.chips').on('chip.add', function(e, chip){
+                $("input[name='form[to]']").val(JSON.stringify($('.chips').material_chip('data')));
+            });
+
+            $('.chips').on('chip.delete', function(e, chip){
+                $("input[name='form[to]']").val(JSON.stringify($('.chips').material_chip('data')));
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,95 @@
+# This file is a "template" of what your parameters.yml file should look like
+# Set parameters here that may be different on each deployment target of the app, e.g. development, staging, production.
+# https://symfony.com/doc/current/best_practices/configuration.html#infrastructure-related-configuration
+parameters:
+    database_host: 127.0.0.1
+    database_port: ~
+    database_name: symfony
+    database_user: root
+    database_password: ~
+    # You should uncomment this if you want to use pdo_sqlite
+    #database_path: '%kernel.project_dir%/var/data/data.sqlite'
+
+    super_admin.username: admin
+    super_admin.initial_password: password
+
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_port: 25
+    mailer_user: ~
+    mailer_password: ~
+    mailer_encryption: null
+
+    # mail user used for transactional
+    transactional_mailer_user: 'contact@localcoop.local'
+    transactional_mailer_user_name: 'espace membre'
+
+
+    # The base domain used for mail addresses
+    emails.base_domain: localcoop.local
+
+    # Several email addresses, to be used as an associative array
+    emails.contact:
+        from_name: 'Contact Localcoop'
+        address: contact@localcoop.local
+    emails.member:
+        from_name: 'Membres Localcoop'
+        address: membres@localcoop.local
+    emails.shift:
+        from_name: 'Créneaux Localcoop'
+        address: creneaux@localcoop.local
+    emails.formation:
+        from_name: 'Formation Localcoop'
+        address: formations@localcoop.local
+    emails.admin:
+        from_name: 'Admin Localcoop'
+        address: admin@localcoop.local
+    emails.noreply:
+        from_name: 'Ne pas répondre'
+        address: noreply@localcoop.local
+
+    # Available emails in some mailing forms
+    emails.sendable:
+        - "%emails.contact%"
+        - "%emails.member%"
+        - "%emails.shift%"
+        - "%emails.formation%"
+        - "%emails.admin%"
+        - "%emails.noreply%"
+
+    # A secret key that's used to generate certain security-related tokens
+    secret: ThisTokenIsNotSoSecretChangeIt
+
+    #router https://symfony.com/doc/3.4/console/request_context.html
+    router.request_context.host: membres.localcoop.local
+    router.request_context.scheme: https
+    router.request_context.base_url:
+
+    site_name: Espace membre @ MyLocalCoop
+    project_name: My Local Coop
+    project_url: https://localcoop.local/
+    project_url_display: localcoop.local
+    wiki_keys_url: ~
+    main_color: #51CAE9
+    helloasso_registration_campaign_url: https://www.helloasso.com/associations/my-local-coop/adhesions/re-adhesion
+    helloasso_api_key:
+    helloasso_api_password:
+    due_duration_by_cycle: 180
+    min_shift_duration: 90
+    registration_duration: '1 year'
+    cycle_duration: '28 days'
+    shift_mailer_user: ~
+    local_currency_name: 'monnaie locale'
+    #ip of the spot, comma separated if many
+    place_local_ip_address: '127.0.0.1,192.168.0.x'
+
+    logging.mattermost.enabled: false
+    logging.mattermost.level: 'critical'
+    logging.mattermost.url: 'http://mattermost.localcoop.local'
+    logging.mattermost.channel: ~
+
+    logging.swiftmailer.enabled: false
+    logging.swiftmailer.level: 'critical'
+    logging.swiftmailer.recipient: ~
+
+    card_reader.dashboard.url: ''

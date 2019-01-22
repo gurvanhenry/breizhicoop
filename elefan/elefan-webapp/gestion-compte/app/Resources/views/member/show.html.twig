@@ -1,0 +1,444 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ member.autocompleteLabel }} - {{ site_name }}{% endblock %}
+
+{% block breadcrumps %}
+    <a href="{{ path('homepage') }}"><i class="material-icons">home</i></a> <i class="material-icons">chevron_right</i>
+    {% if is_granted("ROLE_ADMIN") %}
+        <i class="material-icons">list</i><a href="{{ path('user_index') }}">liste membres</a> <i class="material-icons">chevron_right</i>
+    {% else %}
+        <i class="material-icons">build</i><a href="{{ path('user_office_tools') }}">Outils adhésion et ré-adhésion</a> <i class="material-icons">chevron_right</i>
+    {% endif %}
+    <i class="material-icons">person</i> {{ member.autocompleteLabel }}
+{% endblock %}
+
+{% block content %}
+    <h4>
+        {% if member.withdrawn %}<del>{% endif %}
+            #{{ member.memberNumber }}
+        {% if member.withdrawn %}</del>{% endif %}
+        {% if member.frozen %}<i class="material-icons">notifications_paused</i>{% endif %}
+    </h4>
+    <div class="row">
+        {% for beneficiary in member.beneficiaries %}
+            {% include "beneficiary/_partial/beneficiary_card.html.twig" with { beneficiary: beneficiary, delete_form: delete_beneficiary_forms[beneficiary.id] } %}
+        {% endfor %}
+    </div>
+    {% if member.notes | length %}
+        <h5>Note{% if member.notes | length > 1 %}s{% endif %} à propos de ce membre</h5>
+        <div class="row">
+            {%  for note in member.notes %}
+                {% if not note.parent %}
+                    <div class="col s12 m6 offset-m2 l6">
+                        {% include "user/_partial/note.html.twig" with { note: note } %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if is_granted("beneficiary_add", member) and member.beneficiaries|length < 2 %}{#todo put this value in conf#}
+        <ul class="collapsible" data-collapsible="accordion">
+            <li>
+                <div class="collapsible-header"><i class="material-icons">person_add</i>Ajouter un bénéficiaire</div>
+                <div class="collapsible-body new_registration_form">
+                    {{ form_start(new_beneficiary_form) }}
+                    {% include "beneficiary/_partial/beneficiary_form.html.twig" with { form: new_beneficiary_form } %}
+                    <div class="col s3">
+                        <button type="submit" class="btn"><i class="material-icons left">add</i>Ajouter</button>
+                    </div>
+                    {{ form_end(new_beneficiary_form) }}
+                </div>
+            </li>
+        </ul>
+        {#{% else %}#}
+    {% endif %}
+
+    <ul class="collapsible" data-collapsible="expandable">
+        <li id="registration">
+            <div class="collapsible-header {% if frontend_cookie and frontend_cookie.user_show and frontend_cookie.user_show.registration_open is defined and frontend_cookie.user_show.registration_open %}active{% endif %}">
+                <i class="material-icons">card_membership</i>Adhésions
+            </div>
+            <div class="collapsible-body white">
+
+            <ul class="collapsible" data-collapsible="accordion">
+                {% for registration in member.registrations %}
+                    <li>
+                        <div class="collapsible-header">{% if registration.mode == constant('TYPE_CREDIT_CARD', registration) or registration.mode == constant('TYPE_HELLOASSO', registration) %}
+                                <i class="material-icons tiny">credit_card</i>
+                            {% else %}
+                                <i class="material-icons tiny">attach_money</i>
+                            {% endif %}
+                            {{ registration.date | date('d F Y') }}
+                            {% if registration.mode == constant('TYPE_HELLOASSO', registration) %}<span class="badge right">Helloasso</span>{% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if member.canRegister and member.mainBeneficiary.user != app.user %}
+                <ul class="collapsible" data-collapsible="accordion">
+                    <li>
+                        {% if not member.lastRegistration %}
+                            <div class="collapsible-header"><i class="material-icons">add_circle</i>Adhésion</div>
+                        {% else %}
+                            <div class="collapsible-header"><i class="material-icons">add_circle</i>Ré-adhésion</div>
+                        {% endif %}
+                        <div class="collapsible-body new_registration_form">
+                            {{ form_start(new_registration_form) }}
+                            {% include "user/_partial/registration_form.html.twig" with { form: new_registration_form } %}
+                            {{ form_end(new_registration_form) }}
+                        </div>
+                    </li>
+                </ul>
+            {% elseif (member.mainBeneficiary.user != app.user ) %}
+                <ul class="collapsible" data-collapsible="accordion">
+                    <li>
+                        {% if not member.lastRegistration %}
+                            <div class="collapsible-header"><i class="material-icons">add_circle</i>Adhésion</div>
+                        {% else %}
+                            <div class="collapsible-header"><i class="material-icons">add_circle</i>Ré-adhésion</div>
+                        {% endif %}
+                        <div class="collapsible-body new_registration_form">
+                            Il est trop tôt pour ré-adhérer. Cette adhésion est valable encore {{ member.remainder | date('%a') }} jours.
+                        </div>
+                    </li>
+                </ul>
+            {% endif %}
+            </div>
+        </li>
+        {% if is_granted("create",note) %}
+        <li id="note">
+            <div class="collapsible-header {% if frontend_cookie and frontend_cookie.user_show and frontend_cookie.user_show.note_open is defined and frontend_cookie.user_show.note_open %}active{% endif %}"><i class="material-icons">add</i>Ajouter une note</div>
+            <div class="collapsible-body white">
+                    {{ form_start(note_form) }}
+                    <div class="input-field text col s12">
+                        <div class="errors">
+                            {{ form_errors(note_form.text) }}
+                        </div>
+                        <div class="input-field">
+                            {{ form_widget(note_form.text) }}
+                            {{ form_label(note_form.text) }}
+                        </div>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn waves-effect waves-light">Ajouter une note</button>
+                    </div>
+                    {{ form_end(note_form) }}
+            </div>
+        </li>
+        {% endif %}
+
+        <li id="actions">
+            <div class="collapsible-header {% if frontend_cookie and frontend_cookie.user_show and frontend_cookie.user_show.actions_open is defined and frontend_cookie.user_show.actions_open %}active{% endif %}"><i class="material-icons">build</i>Actions</div>
+            <div class="collapsible-body white">
+                <h5>Etat du compte</h5>
+                {% for beneficiary in member.beneficiaries %}
+                    {% if not beneficiary.user.enabled %}
+                        {% if isTemporaryEmail(beneficiary.user.email) %}
+                            <p>{{ beneficiary.firstname }} n'a pas renseigné son email, son compte ne peux pas être activé.</p>
+                        {% else %}
+                            <form action="{{ path('fos_user_resetting_send_email') }}" method="POST" class="fos_user_resetting_request">
+                                <input type="hidden" name="username" value="{{ beneficiary.user.username }}" />
+                                Envoyer le lien de connexion sur {{ beneficiary.user.email }} ?
+                                <br>
+                                <button type="submit" name="submit" class="btn waves-effect waves-light light-green">
+                                    <i class="material-icons left">devices</i> Activer le compte de {{ beneficiary.firstname }}
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if is_granted("ROLE_USER_MANAGER") %}
+                    {% if is_granted("freeze_change",member) %}
+                        {% if not member.frozen %}
+                            {% if member.frozenChange %}
+                                <a href="{{ path("member_freeze_change",{"id":member.id}) }}" class="waves-effect waves-light btn orange">
+                                    <i class="material-icons left">cancel</i>Annuler la demande de gel du compte</a>
+                            {% else %}
+                                <a href="{{ path("member_freeze_change",{"id":member.id}) }}" class="waves-effect waves-light btn deep-purple">
+                                    <i class="material-icons left">paused</i>Geler le compte à la fin du cycle</a>
+                            {% endif %}
+                        {% else %}
+                            {% if member.frozenChange %}
+                                <a href="{{ path("member_freeze_change",{"id":member.id}) }}" class="waves-effect waves-light btn orange">
+                                    <i class="material-icons left">cancel</i>Annuler la demande de dégel du compte</a>
+                            {% else %}
+                                <a href="{{ path("member_freeze_change",{"id":member.id}) }}" class="waves-effect waves-light btn waves-purple purple lighten-2">
+                                    <i class="material-icons left">play_arrow</i>Dégeler le compte à la fin du cycle</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    {% if is_granted("freeze",member) %}
+                        {% if not member.frozen %}
+                            <a href="#pause" class="waves-effect waves-light btn modal-trigger deep-purple lighten-2">
+                                <i class="material-icons left">paused</i><i class="material-icons left">timer_off</i>Geler le compte immédiatement</a>
+                            <div id="pause" class="modal">
+                                <div class="modal-content">
+                                    <h5><i class="material-icons left small">pause_circle_filled</i>Gel immédiat du compte</h5>
+                                    <p>Attention, le gel immédiat sera effectif dés aujourd'hui, interdisant l'accès au magasin</p>
+                                    <p>De plus, à la fin du cycle, les heures effectuées ne seront pas décomptées.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat green-text">Retour à la raison</a>
+                                    <a class="btn-large waves-effect waves-light btn orange" href="{{ path('member_freeze',{ 'id' : member.id }) }}"><i class="material-icons left">check</i>Je sais ce que je fais !</a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a href="#unpause" class="waves-effect waves-light btn modal-trigger purple lighten-3">
+                                <i class="material-icons left">play_arrow</i><i class="material-icons left">timer_off</i> Dégeler le compte immédiatement</a>
+                            <div id="unpause" class="modal">
+                                <div class="modal-content">
+                                    <h5><i class="material-icons left small">play_arrow</i>Dégel immédiat du compte</h5>
+                                    <p>Attention, le dégel immédiat sera effectif dés aujourd'hui, interdisant l'accès au magasin</p>
+                                    <p>De plus, les heures de bénévolat sont dues pour ce cycle.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat green-text">Retour à la raison</a>
+                                    <a class="btn-large waves-effect waves-light btn orange" href="{{ path('member_unfreeze',{ 'id' : member.id }) }}"><i class="material-icons left">check</i>Je sais ce que je fais !</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <br>
+                    {% endif %}
+                    {% if is_granted("close",member) %}
+                        {% if not member.withdrawn %}
+                            <a href="{{ path("member_close",{"id":member.id}) }}" class="waves-effect waves-light btn red">
+                                <i class="material-icons left">close</i>Fermer le compte</a>
+                        {% else %}
+                            <a href="{{ path("member_open",{"id":member.id}) }}" class="waves-effect waves-light btn teal">
+                                <i class="material-icons left">check</i>Ré-ouvrir le compte</a>
+                        {% endif %}
+                    {% endif %}
+                    <h5>Badges</h5>
+                    <ul>
+                        {% for beneficiary in member.beneficiaries %}
+                            {% if (beneficiary.getSwipeCards | length == 0) or beneficiary.SwipeCards.first.DisabledAt %}
+                                <li><a href="{{ path("generate_swipe",{"id":beneficiary.id}) }}" class="btn light-blue lighten-1">Génerer un badge pour {{ beneficiary.firstname }}</a></li>
+                            {% else %}
+                                {% for badge in beneficiary.getSwipeCards %}
+                                    <li><a href="{{ path("swipe_show",{"id":badge.id}) }}" class="btn light-blue darken-4">voir badge #{{ badge.number }} de {{ beneficiary.firstname }} </a></li>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                    {% if is_granted("ROLE_ADMIN") %}
+                        <h5>login as</h5>
+                        {% for beneficiary in member.beneficiaries %}
+                            <a href="{{ path('homepage', {'_login_as':  beneficiary.user.username }) }}" class="btn deep-purple"><i class="material-icons left">person</i>Se connecter comme {{ beneficiary.user.firstname }}</a>
+                        {% endfor %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </li>
+
+        <li id="shifts">
+            <div class="collapsible-header {% if frontend_cookie and frontend_cookie.user_show and frontend_cookie.user_show.shifts_open is defined and frontend_cookie.user_show.shifts_open %}active{% endif %}"><i class="material-icons">date_range</i>Créneaux</div>
+            <div class="collapsible-body white">
+                {% set firstShiftDate = member.firstShiftDate %}
+                <table class="striped">
+                    <thead>
+                    <tr>
+                        <th>Date du log</th>
+                        <th>Temps</th>
+                        <th>Motif</th>
+                        <th>Créneau associé</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for timeLog in member.timeLogs %}
+                        <tr>
+                            <td>{{ timeLog.date | date_fr_full }}</td>
+                            <td>{{ timeLog.time | duration_from_minutes}}</td>
+                            <td>{{ timeLog.description }}</td>
+                            <td>{{ timeLog.shift }}</td>
+                            <td>
+                                {% if is_granted("ROLE_ADMIN") %}
+                                <a href="{{ path('member_timelog_delete',{ "id":member.id, "timelog_id": timeLog.id }) }}" class="red-text">X</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <th>TOTAL</th>
+                        <td><b>{{ member.timeCount | duration_from_minutes }}</b></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <th>TOTAL CYCLE EN COURS</th>
+                        <td><b>{{ member.timeCount(member.endOfCycle(0)) | duration_from_minutes }}</b></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+
+                {% set previousShifts = member.getShiftsOfCycle(-1) %}
+                {% set currentShifts = member.getShiftsOfCycle() %}
+                {% set nextShifts = member.getShiftsOfCycle(1) %}
+                <div class="col m12">
+                    <div class="row">
+                        <h6>Cycle précédent (du {{ member.startOfCycle(-1) | date_fr_long }} au {{ member.endOfCycle(-1) | date_fr_long }})</h6>
+                        {% if previousShifts|length == 0 %}
+                            Pas de créneau
+                        {% endif %}
+                        {% for shift in previousShifts %}
+                            <div class="col m4 s6">
+                                {% include "user/_partial/shift.html.twig" with { shift: shift  } %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="row">
+                        <h6>Cycle en cours (du {{ member.startOfCycle | date_fr_long }} au {{ member.endOfCycle | date_fr_long }})</h6>
+                        {% if currentShifts|length == 0 %}
+                            Pas de créneau
+                        {% endif %}
+                        {% for shift in currentShifts %}
+                            <div class="col m4 s6">
+                                {% include "user/_partial/shift.html.twig" with { shift: shift  } %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="row">
+                        <h6>Prochain cycle (du {{ member.startOfCycle(1) | date_fr_long }} au {{ member.endOfCycle(1) | date_fr_long }})</h6>
+                        {% if nextShifts|length == 0 %}
+                            Pas de créneau
+                        {% endif %}
+                        {% for shift in nextShifts %}
+                            <div class="col m4 s6">
+                                {% include "user/_partial/shift.html.twig" with { shift: shift  } %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                <p>Date du tout premier créneau : {% if firstShiftDate %}{{ firstShiftDate|date_fr_full }}{% else %}Néant{% endif %}</p>
+
+            </div>
+        </li>
+        {% if is_granted("ROLE_SUPER_ADMIN") %}
+            <li id="super">
+                <div class="collapsible-header {% if frontend_cookie and frontend_cookie.user_show and frontend_cookie.user_show.super_open is defined and frontend_cookie.user_show.super_open %}active{% endif %}"><i class="material-icons">person</i>Actions super admin</div>
+                <div class="collapsible-body white">
+                    {{ form_start(delete_form) }}
+                    {{ form_widget(delete_form) }}
+                    <button type="submit" class="btn red"><i class="material-icons left">delete</i>Supprimer ce membre</button>
+                    {{ form_end(delete_form) }}
+
+                    <h6>Roles</h6>
+
+                    {% if member.mainBeneficiary.user.hasRole('ROLE_ADMIN') %}
+                        <a href="{{ path('user_remove_role', { 'id': member.mainBeneficiary.user.id, 'role': 'ROLE_ADMIN' }) }}" class="btn purple"><i class="material-icons left">arrow_downward</i>supprimer le role ADMIN</a>
+                    {% else %}
+                        <a href="{{ path('user_add_role', { 'id': member.mainBeneficiary.user.id, 'role': 'ROLE_ADMIN' }) }}" class="btn purple"><i class="material-icons left">arrow_upward</i>Faire de {{ member.mainBeneficiary.user.firstname }} un ADMIN</a>
+                    {% endif %}
+
+                    {% if member.mainBeneficiary.user.hasRole('ROLE_USER_MANAGER') %}
+                        <a href="{{ path('user_remove_role', { 'id': member.mainBeneficiary.user.id, 'role': 'ROLE_USER_MANAGER' }) }}" class="btn deep-purple"><i class="material-icons left">arrow_downward</i>supprimer le role USER_MANAGER</a>
+                    {% else %}
+                        <a href="{{ path('user_add_role', { 'id': member.mainBeneficiary.user.id, 'role': 'ROLE_USER_MANAGER' }) }}" class="btn deep-purple"><i class="material-icons left">arrow_upward</i>Faire de {{ member.mainBeneficiary.user.firstname }} un USER_MANAGER</a>
+                    {% endif %}
+
+                    {% if member.mainBeneficiary.user.hasRole('ROLE_FINANCE_MANAGER') %}
+                        <a href="{{ path('user_remove_role', { 'id': member.mainBeneficiary.user.id, 'role': 'ROLE_FINANCE_MANAGER' }) }}" class="btn deep-green"><i class="material-icons left">arrow_downward</i>supprimer le role FINANCE_MANAGER</a>
+                    {% else %}
+                        <a href="{{ path('user_add_role', { 'id': member.mainBeneficiary.user.id, 'role': 'ROLE_FINANCE_MANAGER' }) }}" class="btn deep-green"><i class="material-icons left">arrow_upward</i>Faire de {{ member.mainBeneficiary.user.firstname }} un FINANCE_MANAGER</a>
+                    {% endif %}
+
+                    <h6>Recorded registrations</h6>
+                    <ul class="collapsible" data-collapsible="accordion">
+                        {% for registration in member.mainBeneficiary.user.recordedRegistrations %}
+                            <li>
+                                <div class="collapsible-header">{% if registration.mode == constant('TYPE_CREDIT_CARD', registration) %}
+                                        <i class="material-icons tiny">credit_card</i>
+                                    {% else %}
+                                        <i class="material-icons tiny">attach_money</i>
+                                    {% endif %}
+                                    {{ registration.date | date('d F Y') }} {{ registration.date | date('H:i') }} {{ registration.amount }}
+                                    {% if registration.mode == constant('TYPE_CREDIT_CARD', registration) %}
+                                        € en CARTE CREDIT
+                                    {% elseif registration.mode ==  constant('TYPE_LOCAL', registration) %}
+                                        CAIRN{#TODO PUT THIS VALUE IN CONF#}
+                                    {% elseif registration.mode ==  constant('TYPE_CASH', registration) %}
+                                        € en ESPECE
+                                    {% elseif registration.mode ==  constant('TYPE_CHECK', registration) %}
+                                        € en CHEQUE
+                                    {% endif %}
+                                    {% if registration.membership  %}
+                                    pour #<a href="{{ path("member_new_registration",{"member_number":registration.membership.memberNumber}) }}">{{ registration.membership.memberNumber }}</a>&nbsp;
+                                    {% if registration.membership.mainBeneficiary %}
+                                        {{ registration.membership.mainBeneficiary.firstname }} {{ registration.membership.mainBeneficiary.lastname }}
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </li>
+        {% endif %}
+    </ul>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    function init(){
+        var data_raw = Cookies.get("frontend");
+        var data = undefined;
+        if (data_raw)
+            data = JSON.parse(data_raw);
+        if (!data)
+            data = {};
+        if (!data.user_show)
+            data.user_show = {};
+        return data;
+    }
+    $('#registration .collapsible-header').on('click',function () {
+        var data = init();
+        data.user_show.registration_open = ! $(this).hasClass("active");
+        Cookies.set("frontend",data);
+    });
+    $('#note .collapsible-header').on('click',function () {
+        var data = init();
+        data.user_show.note_open = ! $(this).hasClass("active");
+        Cookies.set("frontend",data);
+    });
+    $('#actions .collapsible-header').on('click',function () {
+        var data = init();
+        data.user_show.actions_open = ! $(this).hasClass("active");
+        Cookies.set("frontend",data);
+    });
+    $('#shifts .collapsible-header').on('click',function () {
+        var data = init();
+        data.user_show.shifts_open = ! $(this).hasClass("active");
+        Cookies.set("frontend",data);
+    });
+    $('#super .collapsible-header').on('click',function () {
+        var data = init();
+        data.user_show.super_open = ! $(this).hasClass("active");
+        Cookies.set("frontend",data);
+    });
+
+</script>
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        div.note strong{
+            font-weight: bold;
+        }
+        div.replies{
+            padding-left: 15px;
+        }
+        {% if member.withdrawn %}
+            body{
+                background: rgba(255, 50, 0, 0.2);
+            }
+        {% endif %}
+    </style>
+{% endblock %}

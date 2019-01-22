@@ -1,0 +1,55 @@
+{% extends 'layout.html.twig' %}
+
+{% block breadcrumps %}
+    {% if is_granted("IS_AUTHENTICATED_REMEMBERED") %}
+    <a href="{{ path('homepage') }}"><i class="material-icons">home</i></a> <i class="material-icons">chevron_right</i>
+    <i class="material-icons">build</i><a href="{{ path('user_office_tools') }}">Outils adhésion et ré-adhésion</a> <i class="material-icons">chevron_right</i>
+    <i class="material-icons">search</i><span>Recherche numéro d'adhérent</span>
+    {% endif %}
+{% endblock %}
+
+{% block aftercontainer %}
+{% endblock %}
+
+{% block content %}
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+            <h3 class="header center">Recherche numéro d'adhérent</h3>
+            {% if form %}
+                {{ form_start(form) }}
+                {{ form_errors(form) }}
+                    <div class="row center">
+                        <div class="input-field col s6">
+                            {{ form_widget(form.firstname) }}
+                            {{ form_label(form.firstname) }}
+                        </div>
+                    </div>
+                    <div class="row center">
+                        {{ form_widget(form.find, {'attr': {'class': 'btn waves-effect waves-light'}}) }}
+                    </div>
+                {{ form_end(form) }}
+            {% endif %}
+            {% if beneficiaries %}
+            <div class="collection">
+                {% for beneficiary in beneficiaries %}
+                    <form action="{{ path(return_path, { (routeParam): beneficiary.id } | merge(params)) }}" method="post" class="collection-item">
+                        <a href="#" onclick="$(this).closest('form').submit()" >#{{ beneficiary.memberNumber }} {{ beneficiary.firstname }} {{ beneficiary.lastname | first | upper }}{% if beneficiary.membership.lastRegistration %} - {{ beneficiary.membership.lastRegistration.date | date('d F Y') }}{% endif %}</a>
+                    </form>
+                {% endfor %}
+            </div>
+            {% elseif not form %}
+                <div class="row center">
+                    <p class=" col s12 light">Oups, aucun résultats pour ce prénom !<br>
+                        <a href="{{ path('find_member_number') }}" class="btn">Essayer un autre ?</a>
+                    </p>
+                </div>
+            {% endif %}
+            {% if not is_granted("IS_AUTHENTICATED_REMEMBERED") %}
+            <div class="row center">
+                <p class=" col s12 light">Déjà un compte ? <a href="{{ path('fos_user_security_login') }}">identifiez-vous</a></p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+{% endblock %}

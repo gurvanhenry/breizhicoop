@@ -1,0 +1,71 @@
+<div
+        {% set nbShifter = bucket.shifterCount() %}
+        {% set nbShifts = bucket.shifts | length %}
+        {% set nbBookableShifts = shift_service.getBookableShiftsCount(bucket) %}
+        {% set nbBookedShifts = nbShifts - nbBookableShifts %}
+        {% set firstBookableShift = shift_service.firstBookable(bucket, beneficiary) %}
+        data-offset="{{ (((bucket.start|date('G')-start)*60 + bucket.start|date('i'))/60) }}"
+        data-length="{{ (100/(end-start+1)) }}"
+        style="width:{{ (bucket.duration / 60) * (100/(end-start+1)) }}%;
+                left:{{ (((bucket.start|date('G')-start)*60 + bucket.start|date('i'))/60)*(100/(end-start+1)) }}%;
+                top: {{ line*10 }}px;" class="shift-bucket">
+    <div style="height:2px; width: 100%;position: absolute;top:-2px;">
+        {% if nbBookableShifts < nbShifts %}
+            {% for shifter in 1..(nbShifts - nbBookableShifts) %}
+                <div class="green lighten-3 left" style="height:100%; width: {{ 100/(nbShifts) }}%"></div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <a href="#{% if firstBookableShift %}book{{ firstBookableShift.id }}{% endif %}"
+       class="modal-trigger tooltipped" data-position="top" data-delay="100"
+       data-tooltip="{{ bucket.sortedShifts.first.job.name }}">
+        <div class="z-depth-1 {{ bucket.sortedShifts.first.job.color }} lighten-5 black-text"
+             style="position: relative">
+            <div class="shift-block">
+                <span class="small hide-on-med-and-up" style="font-size: 10px">
+                    {% if bucket.start|date('i') == '00' %}{{ bucket.start|date('G\\h') }}{% else %}{{ bucket.start|date('G\\hi') }}{% endif %}
+                    {% if bucket.end|date('i') == '00' %}{{ bucket.end|date('G\\h') }}{% else %}{{ bucket.end|date('G\\hi') }}{% endif %}
+                </span>
+                <span class="hide-on-small-and-down">{{ bucket.start|date('G\\hi') }} - {{ bucket.end|date('G\\hi') }}</span><br>
+                {% if (nbShifter == 0) %}
+                    <span class="red-text"><i class="material-icons tiny">warning</i><span class="hide-on-small-and-down">&nbsp;sous-effectif</span></span>
+                {% elseif (nbShifter < nbShifts/2) %}
+                    <span class="orange-text"><i class="material-icons tiny">warning</i><span class="hide-on-small-and-down">&nbsp;sous-effectif</span></span>
+                {% endif %}
+                {% if nbBookableShifts == 0 %}
+                    <span class="green-text"><i class="material-icons tiny">check</i>&nbsp;complet</span>
+                {% endif %}
+            </div>
+            <div class="shift-block">
+                <div class="hide-on-med-and-down">
+                {% for shift in bucket.sortedShifts %}
+                    {% if shift.isDismissed %}
+                        {% set class = "red-text" %}
+                    {% elseif (shift.shifter) %}
+                        {% set class = "green-text" %}
+                    {% elseif (shift.lastShifter) %}
+                        {% set class = "green-text text-lighten-4" %}
+                    {% elseif (app.user and not shift_service.isShiftBookable(shift, beneficiary)) %}
+                        {% set class = "grey-text text-lighten-2" %}
+                    {% else %}
+                        {% set class = "grey-text text-darken-2" %}
+                    {% endif %}
+                    <span class="{{ class }}">
+                        {% if not shift.formation %}
+                            <i class="material-icons shifter">{% if shift.shifter or shift.lastShifter %}radio_button_checked{% else %}radio_button_unchecked{% endif %}</i>
+                        {% else %}
+                            <i class="material-icons shifter">account_circle</i>
+                        {% endif %}
+                    </span>
+                {% endfor %}
+                </div>
+                {% if firstBookableShift and firstBookableShift.isDismissed %}
+                    <span style="position:absolute; top:0;right:50%;opacity:0.5;" class="blue-text"><i class="material-icons">star</i></span>
+                {% endif %}
+            </div>
+        </div>
+    </a>
+</div>
+{% if firstBookableShift %}
+    {% include "booking/_partial/modal.html.twig" with { beneficiary: beneficiary, user: app.user, bucket: bucket } %}
+{% endif %}

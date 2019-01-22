@@ -1,0 +1,72 @@
+# This file is auto-generated during the composer install
+# Gurvan => BUT i will use it to avoid typing value every time !
+parameters:
+    database_host: db
+    database_port: 3306
+    database_name: gestion-compte
+    database_user: user
+    database_password: pass
+    super_admin.username: admin
+    super_admin.initial_password: password
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_port: 25
+    mailer_user: null
+    mailer_password: null
+    mailer_encryption: null
+    transactional_mailer_user: contact@localcoop.local
+    transactional_mailer_user_name: 'espace membre'
+    emails.base_domain: localcoop.local
+    emails.contact:
+        from_name: 'Contact Localcoop'
+        address: contact@localcoop.local
+    emails.member:
+        from_name: 'Membres Localcoop'
+        address: membres@localcoop.local
+    emails.shift:
+        from_name: 'Créneaux Localcoop'
+        address: creneaux@localcoop.local
+    emails.formation:
+        from_name: 'Formation Localcoop'
+        address: formations@localcoop.local
+    emails.admin:
+        from_name: 'Admin Localcoop'
+        address: admin@localcoop.local
+    emails.noreply:
+        from_name: 'Ne pas répondre'
+        address: noreply@localcoop.local
+    emails.sendable:
+        - '%emails.contact%'
+        - '%emails.member%'
+        - '%emails.shift%'
+        - '%emails.formation%'
+        - '%emails.admin%'
+        - '%emails.noreply%'
+    secret: ThisTokenIsNotSoSecretChangeIt
+    router.request_context.host: membres.localcoop.local
+    router.request_context.scheme: http
+    router.request_context.base_url: null
+    site_name: 'Espace membre @ MyLocalCoop'
+    project_name: 'My Local Coop'
+    project_url: 'https://localcoop.local/'
+    project_url_display: localcoop.local
+    wiki_keys_url: null
+    main_color: null
+    helloasso_registration_campaign_url: 'https://www.helloasso.com/associations/my-local-coop/adhesions/re-adhesion'
+    helloasso_api_key: null
+    helloasso_api_password: null
+    due_duration_by_cycle: 180
+    min_shift_duration: 90
+    registration_duration: '1 year'
+    cycle_duration: '28 days'
+    shift_mailer_user: null
+    local_currency_name: 'monnaie locale'
+    place_local_ip_address: '127.0.0.1,192.168.0.x'
+    logging.mattermost.enabled: false
+    logging.mattermost.level: critical
+    logging.mattermost.url: 'http://mattermost.localcoop.local'
+    logging.mattermost.channel: null
+    logging.swiftmailer.enabled: false
+    logging.swiftmailer.level: critical
+    logging.swiftmailer.recipient: null
+    card_reader.dashboard.url: ''

@@ -1,0 +1,54 @@
+{% extends 'layout.html.twig' %}
+
+{% block beforecontainer %}
+{% endblock %}
+{% block aftercontainer %}
+{% endblock %}
+{% block content %}
+    <div class="section no-pad-bot" id="index-banner">
+        <div class="container">
+        {% if is_granted("ROLE_ADMIN") %}
+                <h4 class="row center">
+                    <i class="material-icons large">settings</i><br>
+                    Admin
+                </h4>
+                <h6>Membres</h6>
+                <a href="{{ path("member_join") }}" class="waves-effect waves-light btn"><i class="material-icons left">call_merge</i>Joindre deux comptes</a>
+                <a href="{{ path("admin_commissions") }}" class="waves-effect waves-light btn"><i class="material-icons left">tune</i>Gérer les commissions</a>
+                <a href="{{ path("admin_formations") }}" class="waves-effect waves-light btn"><i class="material-icons left">tune</i>Gérer les formations</a>
+                <h6>Finances</h6>
+                <a href="{{ path("admin_registrations") }}" class="waves-effect waves-light btn indigo"><i class="material-icons left">attach_money</i>Gérer les Adhésions / Réadhésions</a>
+                <a href="{{ path("helloasso_payments") }}" class="waves-effect waves-light btn indigo"><i class="material-icons left">settings_ethernet</i>Paiements helloasso</a>
+                <h6>Divers</h6>
+                <a href="{{ path("event_list") }}" class="waves-effect waves-light btn"><i class="material-icons left">event</i>Gérer les événements</a>
+                <a href="{{ path("widget_generator") }}" class="waves-effect waves-light btn"><i class="material-icons left">tune</i>Générer un widget</a>
+                <h6>Créneaux</h6>
+                <a href="{{ path("period") }}" class="waves-effect waves-light btn"><i class="material-icons left">date_range</i>la semaine type</a>
+                <a href="{{ path("period") }}" class="waves-effect waves-light btn disabled"><i class="material-icons left">date_range</i>les exceptions</a>
+                <a href="{{ path("job_list") }}" class="waves-effect waves-light btn"><i class="material-icons left">person</i>les postes de bénévolat</a>
+                <h6>Boîtier cles</h6>
+                <a href="{{ path("codes_list") }}" class="waves-effect waves-light btn deep-purple lighten-1"><i class="material-icons left">vpn_key</i>Voir code(s)</a>
+                <a href="{{ path("code_new") }}" class="waves-effect waves-light btn deep-purple darken-1"><i class="material-icons left">vpn_key</i>Déposer les clefs</a>
+
+        {% endif %}
+        {% if is_granted("ROLE_SUPER_ADMIN") %}
+            <h5>Actions super admin</h5>
+            <h6>Membres</h6>
+            <a href="{{ path("user_import_csv") }}" class="waves-effect waves-light btn disabled">Importer des adhérents en CSV</a>
+            <a href="{{ path("admin_emails_csv") }}" class="waves-effect waves-light btn"><i class="material-icons left">list</i>export emails as csv</a>
+            <h6>Admins</h6>
+            <a href="{{ path("user_install_admin") }}" class="waves-effect waves-light btn deep-purple"><i class="material-icons left">add</i>Ajouter un admin</a>
+            <a href="{{ path("admins_list") }}" class="waves-effect waves-light btn deep-purple"><i class="material-icons left">list</i>List des utilisateurs admin</a>
+            <h6>Divers</h6>
+            <a href="{{ path("admin_clients") }}" class="waves-effect waves-light btn"><i class="material-icons left">vpn_key</i>Gérer les clients Oauth</a>
+            <a href="{{ path("admin_services") }}" class="waves-effect waves-light btn"><i class="material-icons left">extension</i>Gérer les services</a>
+        {% endif %}
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+{% endblock %}
+{% block javascripts %}
+{% endblock %}

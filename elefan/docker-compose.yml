@@ -1,0 +1,32 @@
+version: '3.2'
+
+volumes: 
+  dbdata:
+
+services:
+  db:
+    image: mariadb
+    container_name: elefan_mariadb
+    restart: always
+    volumes:
+       - dbdata:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=elefan_pass
+      - MYSQL_DATABASE=gestion-compte
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+
+  adminer:
+    image: adminer
+    container_name: elefan_adminer
+    restart: on-failure
+    ports:
+      - 83:8080
+
+  gestion-compte:
+    build: elefan-webapp
+    image: elefan-webapp
+    container_name: elefan_gestion-compte
+    restart: always
+    ports:
+      - 84:80
